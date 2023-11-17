@@ -20,7 +20,7 @@ data class Doctor(
     val type: String = "",
     val about: String = "",
     val activeTakenSlots: Map<String, List<String>> = emptyMap(),
-    val timeSlotsSettings: List<String>,
+    val timeSlotsSettings: List<String> =emptyList(),
     val profilePicLink: String = ""
 )
 

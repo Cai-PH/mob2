@@ -19,6 +19,7 @@ sealed class DataStates {
     data class getSchedulesSuccess(val appointments: List<Appointment>):DataStates()
     data object addScheduleSuccess:DataStates()
     data object deleteScheduleSuccess:DataStates()
+    data object createUserSuccess:DataStates()
 
     data object userNotExist:DataStates()
     data object Loading:DataStates()

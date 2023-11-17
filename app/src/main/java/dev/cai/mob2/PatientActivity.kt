@@ -69,6 +69,7 @@ class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSel
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
                 is DataStates.getSchedulesSuccess -> {
+                    count=dataState.appointments.size
                     mAdapter = MyAdapter(dataState.appointments,count,this,intent.getStringExtra("PUID")?:"")
                     recyclerView.adapter = mAdapter
                 }
@@ -76,6 +77,8 @@ class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSel
                 else -> {}
             }
         })
+        mAdapter = MyAdapter(emptyList(),count, this,intent.getStringExtra("PUID")?:"")
+        recyclerView.adapter = mAdapter
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -99,7 +102,7 @@ class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSel
             }
 
             R.id.logOut ->{
-                val auth=FirebaseAuth.getInstance().signOut()
+                FirebaseAuth.getInstance().signOut()
                 val intent = Intent(this@PatientActivity, MainActivity::class.java)
                 startActivity(intent)
             }

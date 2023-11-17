@@ -124,5 +124,96 @@ class DataViewModel : ViewModel() {
                 _dataState.value = DataStates.Error
             }
     }
+    fun createUser(uid:String,type:String) {
+        _dataState.value=DataStates.Loading
+        val userRef = FirebaseDatabase.getInstance().getReference("users")
 
+        userRef.child(uid).setValue(User(userId = uid, userType = type))
+        _dataState.value = DataStates.createUserSuccess
+    }
+    fun getAppointmentsForDoctor(doctorId: String) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        val query = databaseReference.orderByChild("doctorId").equalTo(doctorId)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val appointments = mutableListOf<Appointment>()
+                for (snapshot in dataSnapshot.children) {
+                    val appointment = snapshot.getValue(Appointment::class.java)
+                    appointment?.let {
+                        appointments.add(it)
+                    }
+                }
+                _dataState.value=DataStates.getSchedulesSuccess(appointments)
+                // Here you have a list of appointments for the specified doctor
+                // You can pass this list to the UI or handle it as needed
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                _dataState.value=DataStates.Error
+            }
+        })
+    }
+    fun getAppointmentsForPatient(patientId: String) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        val query = databaseReference.orderByChild("patientId").equalTo(patientId)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val appointments = mutableListOf<Appointment>()
+                for (snapshot in dataSnapshot.children) {
+                    val appointment = snapshot.getValue(Appointment::class.java)
+                    appointment?.let {
+                        appointments.add(it)
+                    }
+                }
+                _dataState.value=DataStates.getSchedulesSuccess(appointments)
+                // Here you have a list of appointments for the specified patient
+                // You can pass this list to the UI or handle it as needed
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                _dataState.value=DataStates.Error
+            }
+        })
+    }
+    fun getAllPatients() {
+        _dataState.value = DataStates.Loading
+        val databaseReference = FirebaseDatabase.getInstance().getReference("patients")
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val patients = mutableListOf<Patient>()
+                for (patientSnapshot in snapshot.children) {
+                    val patient = patientSnapshot.getValue(Patient::class.java)
+                    patient?.let { patients.add(it) }
+                }
+                _dataState.value = DataStates.getAllPatientsDataSuccess(patients)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                _dataState.value = DataStates.Error
+            }
+        })
+    }
+    fun getAllDoctors() {
+        _dataState.value = DataStates.Loading
+        val databaseReference = FirebaseDatabase.getInstance().getReference("doctors")
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val doctors = mutableListOf<Doctor>()
+                for (docSnapshot in snapshot.children) {
+                    val doctor = docSnapshot.getValue(Doctor::class.java)
+                    doctor?.let { doctors.add(it)
+                    Log.d("initializing doc " ,it.doctorId)}
+                }
+                _dataState.value = DataStates.getAllDoctorsDataSuccess(doctors)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                _dataState.value = DataStates.Error
+            }
+        })
+    }
 }

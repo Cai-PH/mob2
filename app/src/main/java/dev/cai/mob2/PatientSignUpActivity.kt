@@ -2,6 +2,7 @@ package dev.cai.mob2
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -22,7 +23,7 @@ class PatientSignUpActivity : AppCompatActivity() {
     private lateinit var dataViewModel: DataViewModel
     private lateinit var imageView: ImageView
     private var isEmpty=true
-    private var link=""
+    private lateinit var curUri:Uri
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dataViewModel= DataViewModel()
@@ -42,33 +43,37 @@ class PatientSignUpActivity : AppCompatActivity() {
         }
         doneButton.setOnClickListener {
             if (validateInputs()) {
-                val patient = Patient(
-                    patientId = intent.getStringExtra("UID")!!,
-                    firstName = firstNameEditText.text.toString(),
-                    email= emailEditText.text.toString(),
-                    lastName= lastNameEditText.text.toString(),
-                    middleName = middleNameEditText.text.toString(),
-                    phoneNo = phoneNumberEditText.text.toString(),
-                    profilePicLink= link)
-
-                dataViewModel.createPatient(patient)
-                Log.d("sendhelp",link)
-                val intent = Intent(this@PatientSignUpActivity, PatientActivity::class.java)
-                intent.putExtra("UID",uid)
-                startActivity(intent);
-
-
+                dataViewModel.uploadProfilePic(curUri)
             }
         }
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
-                is DataStates.uploadProfileImageSuccess -> link=(dataState.link)
+                is DataStates.uploadProfileImageSuccess ->{
+                    val patient = Patient(
+                        patientId = intent.getStringExtra("UID")!!,
+                        firstName = firstNameEditText.text.toString(),
+                        email= emailEditText.text.toString(),
+                        lastName= lastNameEditText.text.toString(),
+                        middleName = middleNameEditText.text.toString(),
+                        phoneNo = phoneNumberEditText.text.toString(),
+                        profilePicLink= dataState.link)
+
+                    dataViewModel.createPatient(patient)
+                    Log.d("sendhelp",dataState.link)
+                    dataViewModel.createUser(intent.getStringExtra("UID")!!,"Patient")
+                }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
+                DataStates.createUserSuccess -> {
+                    val intent = Intent(this@PatientSignUpActivity, PatientActivity::class.java)
+                    intent.putExtra("UID",uid)
+                    startActivity(intent);
+            }
                 // Handle other states as needed
                 else -> {}
             }
         })
     }
+
     companion object {
         private const val PICK_IMAGE_REQUEST = 1
     }
@@ -85,8 +90,8 @@ class PatientSignUpActivity : AppCompatActivity() {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
             val imageUri = data.data
             imageView.setImageURI(imageUri)
+            curUri=imageUri!!
             isEmpty=false;
-            imageUri?.let { dataViewModel.uploadProfilePic(it) }
         }
     }
     private fun validateInputs(): Boolean {

@@ -24,8 +24,9 @@
             android:textSize="20sp" />
 
         <Button
+            android:layout_gravity="center"
             android:id="@+id/btn_findDoc"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Schedule An Appointment" />
 

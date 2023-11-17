@@ -104,12 +104,12 @@ class MainActivity : AppCompatActivity() {
     }
     private fun loginUser(user:User) {
         if (user.userType=="Patient") {
-            intent = Intent(this@MainActivity, DoctorActivity::class.java)
+            intent = Intent(this@MainActivity, PatientActivity::class.java)
             Log.d("aasdc", uid?:"")
             intent.putExtra("UID", uid);
             startActivity(intent);
         } else if (user.userType=="Doctor") {
-            intent = Intent(this@MainActivity, PatientActivity::class.java)
+            intent = Intent(this@MainActivity, DoctorActivity::class.java)
             Log.d("aasdc", uid?:"")
             intent.putExtra("UID", uid);
             startActivity(intent);

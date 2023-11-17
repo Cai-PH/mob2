@@ -3,8 +3,12 @@ package dev.cai.mob2
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +23,11 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.graphics.BitmapCompat
 import androidx.lifecycle.Observer
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class DoctorSignUpActivity : AppCompatActivity() {
     val timeSlots = Array(24) { i -> String.format("%02d:00", i+1) }
@@ -42,6 +50,7 @@ class DoctorSignUpActivity : AppCompatActivity() {
     private lateinit var dataViewModel: DataViewModel
     private lateinit var imageView: ImageView
     private var isEmpty=true
+    private lateinit var curUri: Uri
 
     private var link=""
     companion object {
@@ -58,11 +67,28 @@ class DoctorSignUpActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            val imageUri = data.data
+            val imageUri = convertToJpegAndGetUri(this, data.data!!)
             imageView.setImageURI(imageUri)
             isEmpty=false;
-            imageUri?.let { dataViewModel.uploadProfilePic(it) }
+            curUri=imageUri!!
         }
+    }
+    fun convertToJpegAndGetUri(context: Context, imageUri: Uri): Uri? {
+        try {
+            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+
+            val jpegFileName = "converted_image_${System.currentTimeMillis()}.jpeg"
+            val jpegFile = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), jpegFileName)
+
+            FileOutputStream(jpegFile).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+            }
+
+            return Uri.fromFile(jpegFile)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,39 +125,37 @@ class DoctorSignUpActivity : AppCompatActivity() {
 
         doneButton.setOnClickListener {
             if (validateInputs()) {
-                Log.d("sendhelp","b")
-                val doctor = Doctor(
-
-                    doctorId = intent.getStringExtra("UID")!!,
-                    firstName = firstNameEditText.text.toString(),
-                    email= emailEditText.text.toString(),
-                    lastName= lastNameEditText.text.toString(),
-                    middleName = middleNameEditText.text.toString(),
-                    phoneNo = phoneNumberEditText.text.toString(),
-                    profilePicLink= link,
-                    rate = rate.text.toString().toInt(),
-                    type=type.text.toString(),
-                    about=  bio.text.toString(),
-                    activeTakenSlots = emptyMap(),
-                    timeSlotsSettings = selectedSlots
-                )
-                val uData = HashMap<String,Any>()
-                uData["fname"] = firstNameEditText.text.toString()
-                uData["mname"] = middleNameEditText.text.toString()
-                uData["lname"] = lastNameEditText.text.toString()
-                uData["phone"] = phoneNumberEditText.text.toString()
-                uData["email"] = emailEditText.text.toString()
-                uData["bio"] = bio.text.toString()
-                uData["rate"] = rate.text.toString().toInt()
-                uData["type"] = type.text.toString()
-
+                dataViewModel.uploadProfilePic(curUri)
             }
         }
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
-                is DataStates.uploadProfileImageSuccess -> link=(dataState.link)
+                is DataStates.uploadProfileImageSuccess -> {
+                    Log.d("sendhelp","b")
+                    val doctor = Doctor(
+                        doctorId = intent.getStringExtra("UID")!!,
+                        firstName = firstNameEditText.text.toString(),
+                        email= emailEditText.text.toString(),
+                        lastName= lastNameEditText.text.toString(),
+                        middleName = middleNameEditText.text.toString(),
+                        phoneNo = phoneNumberEditText.text.toString(),
+                        profilePicLink= dataState.link,
+                        rate = rate.text.toString().toInt(),
+                        type=type.text.toString(),
+                        about=  bio.text.toString(),
+                        activeTakenSlots = emptyMap(),
+                        timeSlotsSettings = selectedSlots
+                    )
+                    dataViewModel.createDoctor(doctor)
+                    Log.d("sendhelp",dataState.link)
+                    dataViewModel.createUser(intent.getStringExtra("UID")!!,"Doctor")
+                }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
-                // Handle other states as needed
+                DataStates.createUserSuccess -> {
+                    val intent = Intent(this@DoctorSignUpActivity, DoctorActivity::class.java)
+                    intent.putExtra("UID",uid)
+                    startActivity(intent);
+                }
                 else -> {}
             }
         })
