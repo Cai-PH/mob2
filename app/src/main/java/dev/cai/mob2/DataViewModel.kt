@@ -1,0 +1,128 @@
+package dev.cai.mob2
+
+import android.net.Uri
+import android.provider.ContactsContract.Data
+import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storage
+import java.util.UUID
+
+class DataViewModel : ViewModel() {
+    private val auth = Firebase.auth
+    private val db_users = Firebase.database.reference
+    private var fb_storage = Firebase.storage.reference
+    private val _dataState = MutableLiveData<DataStates>()
+    val dataState: LiveData<DataStates> = _dataState
+
+    fun getDataStates(): LiveData<DataStates> = _dataState
+    fun firebaseAuthWithGoogle(account: String?) {
+        _dataState.value=DataStates.Loading
+        val credential = GoogleAuthProvider.getCredential(account, null)
+        auth.signInWithCredential(credential).addOnCompleteListener {
+            if (it.isSuccessful) _dataState.value = DataStates.authUserSuccess(auth.currentUser!!.uid)
+            else _dataState.value = DataStates.Error
+        }.addOnFailureListener {
+            _dataState.value = DataStates.Error
+        }
+    }
+    fun attemptSignIn() {
+
+    }
+    fun uploadProfilePic(imageUri: Uri) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imageRef = storageRef.child("images/${UUID.randomUUID()}")
+
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener { taskSnapshot ->
+                taskSnapshot.metadata?.reference?.downloadUrl?.addOnSuccessListener { uri ->
+                    _dataState.value = DataStates.uploadProfileImageSuccess(uri.toString())
+                }
+            }
+            .addOnFailureListener {
+                _dataState.value = DataStates.Error
+            }
+    }
+    fun createPatient(patient: Patient) {
+        _dataState.value=DataStates.Loading
+        val userRef = FirebaseDatabase.getInstance().getReference("patients")
+        userRef.child(patient.patientId).setValue(patient)
+        FirebaseDatabase.getInstance().getReference("users").child(patient.patientId).setValue(User(userType = "Patient", userId = patient.patientId))
+        _dataState.value = DataStates.uploadPatientDataSuccess(patient)
+    }
+    fun createDoctor(doctor: Doctor) {
+        _dataState.value=DataStates.Loading
+        val userRef = FirebaseDatabase.getInstance().getReference("doctors")
+        userRef.child(doctor.doctorId).setValue(doctor)
+        _dataState.value = DataStates.uploadDoctorDataSuccess(doctor)
+
+    }
+    fun getUserData(uid: String) {
+        _dataState.value=DataStates.Loading
+        val userRef = FirebaseDatabase.getInstance().getReference("users")
+        Log.d("","check call")
+        userRef.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("","user exist2")
+                if (snapshot.exists()) {
+                    val user = snapshot.getValue(User::class.java) ?: User()
+                    _dataState.value = DataStates.getUserDataSuccess(user)
+                    Log.d("","user exist")
+                } else {
+                    Log.d("","user not exist")
+                    _dataState.value=DataStates.userNotExist
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d("","error as whole")
+                _dataState.value = DataStates.Error
+            }
+        })
+
+    }
+    fun createAndUploadAppointment(doctor: Doctor, patient: Patient, date:String,time:String, unix:Long ) {
+        _dataState.value = DataStates.Loading
+        val appointment = Appointment(
+            scheduleId = UUID.randomUUID().toString(),
+            patientId = patient.patientId,
+            pfirstName = patient.firstName,
+            plastName = patient.lastName,
+            pmiddleName = patient.middleName,
+            pphoneNo = patient.phoneNo,
+            pprofilePicLink = patient.profilePicLink,
+            pemail = patient.email,
+            doctorId = doctor.doctorId,
+            dfirstName = doctor.firstName,
+            dlastName = doctor.lastName,
+            dmiddleName = doctor.middleName,
+            dphoneNo = doctor.phoneNo,
+            dprofilePicLink = doctor.profilePicLink,
+            demail = doctor.email,
+            price = doctor.rate.toString(),
+            date = date,
+            time = time,
+            unix = unix
+        )
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        databaseReference.child(appointment.scheduleId).setValue(appointment)
+            .addOnSuccessListener {
+                _dataState.value = DataStates.addScheduleSuccess
+            }
+            .addOnFailureListener {
+                _dataState.value = DataStates.Error
+            }
+    }
+
+}

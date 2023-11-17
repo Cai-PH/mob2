@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">SOFTENG2</string>
+    <string name="login">Login</string>
+    <string name="done">Done</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="book">Book</string>
+    <string name="navigation_drawer_open">Open</string>
+    <string name="navigation_drawer_close">Close</string>
+    <string name="signUp">Sign Up</string>
+
+    <string name="google_web_client_id">871279639328-tglsq3gj3vtcup9h002qgb1g0f5pi1t5.apps.googleusercontent.com</string>
+    <string-array name="users">
+        <item>Patient</item>
+        <item>Doctor</item>
+    </string-array>
+
+    <string-array name="doctorType">
+        <item>Dentist</item>
+        <item>Dermatologist</item>
+        <item>Pediatrician</item>
+        <item>Therapist</item>
+        <item>Ophthalmologist</item>
+    </string-array>
+
+</resources>
