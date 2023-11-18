@@ -24,12 +24,15 @@ class DoctorListActivity : AppCompatActivity(){
         setContentView(activityDoctorsBinding.root)
         val puid= intent.getStringExtra("UID")?:""
         dataViewModel.getAllDoctors()
+
+        adapter = DoctorListAdapter(mutableListOf<Doctor>() ,this,puid)
+        activityDoctorsBinding.rvDoctors.adapter = adapter;
+        activityDoctorsBinding.rvDoctors.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        setContentView(activityDoctorsBinding.root)
         dataViewModel.dataState.observe(this, Observer { dataState->
             when (dataState) {
                 is DataStates.getAllDoctorsDataSuccess -> {
-                    count = dataState.users.size
-                    adapter = DoctorListAdapter(dataState.users ,count,this,puid)
-                    activityDoctorsBinding.rvDoctors.adapter = adapter;
+                    adapter.updateDoctors(dataState.users)
                     Log.d("initializing doc " ,dataState.users.size.toString() + ""+count)
                 }
                 DataStates.Loading -> {
@@ -43,7 +46,5 @@ class DoctorListActivity : AppCompatActivity(){
             }
 
         })
-        activityDoctorsBinding.rvDoctors.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        setContentView(activityDoctorsBinding.root)
     }
 }

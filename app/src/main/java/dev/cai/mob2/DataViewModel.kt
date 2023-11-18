@@ -181,7 +181,7 @@ class DataViewModel : ViewModel() {
         _dataState.value = DataStates.Loading
         val databaseReference = FirebaseDatabase.getInstance().getReference("patients")
 
-        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val patients = mutableListOf<Patient>()
                 for (patientSnapshot in snapshot.children) {
@@ -200,7 +200,7 @@ class DataViewModel : ViewModel() {
         _dataState.value = DataStates.Loading
         val databaseReference = FirebaseDatabase.getInstance().getReference("doctors")
 
-        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val doctors = mutableListOf<Doctor>()
                 for (docSnapshot in snapshot.children) {

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import dev.cai.mob2.Doctor
 import dev.cai.mob2.DoctorListActivity
@@ -12,14 +13,18 @@ import dev.cai.mob2.ScheduleActivity
 import dev.cai.mob2.databinding.DoctorCardBinding
 
 class DoctorListAdapter(
-    private val documentList: List<Doctor>,
-    private val itemcount: Int,
+    private var documentList: MutableList<Doctor>,
     private val context: Context,
     private val puid: String
 ) : RecyclerView.Adapter<DoctorListAdapter.ViewHolder>(){
     var num=0
+    fun updateDoctors(newDoctor: List<Doctor>) {
+        documentList.clear()
+        documentList.addAll(newDoctor)
+        notifyDataSetChanged()
+    }
     class ViewHolder(private val doctorCardBinding: DoctorCardBinding, private val context: Context) : RecyclerView.ViewHolder(doctorCardBinding.root){
-        fun bind(doc: Doctor, pos:Int) {
+        fun bind(doc:Doctor, pos:Int) {
             Log.d("errorasd",doc.doctorId.toString())
                     doctorCardBinding.tvName.text = (
                             doc.lastName.toString()
@@ -49,12 +54,10 @@ class DoctorListAdapter(
         return ViewHolder(binding,context)
     }
 
-    override fun getItemCount(): Int {
-        Log.d("aasda",itemcount.toString())
-        return itemcount
-    }
+    override fun getItemCount() =documentList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(documentList[position], position)
     }
+
 }
