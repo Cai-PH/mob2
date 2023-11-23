@@ -1,12 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:padding="16dp">
 
+    <!-- AM Time Slots List -->
     <ListView
-        android:id="@+id/list_view_time_slots"
-        android:layout_width="match_parent"
+        android:id="@+id/list_view_am_time_slots"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="8dp"/>
+
+    <!-- Space between the two lists -->
+    <Space
+        android:layout_width="16dp"
         android:layout_height="match_parent" />
+
+    <!-- PM Time Slots List -->
+    <ListView
+        android:id="@+id/list_view_pm_time_slots"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="8dp"/>
 </LinearLayout>

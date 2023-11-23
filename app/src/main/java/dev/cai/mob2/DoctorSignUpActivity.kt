@@ -23,14 +23,43 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.BitmapCompat
 import androidx.lifecycle.Observer
+import dev.cai.mob2.R.color.dgreen
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 class DoctorSignUpActivity : AppCompatActivity() {
-    val timeSlots = Array(24) { i -> String.format("%02d:00", i+1) }
+    val amTimeSlots = listOf(
+        "12:00AM - 1:00AM",
+        "1:00AM - 2:00AM",
+        "2:00AM - 3:00AM",
+        "3:00AM - 4:00AM",
+        "4:00AM - 5:00AM",
+        "5:00AM - 6:00AM",
+        "6:00AM - 7:00AM",
+        "7:00AM - 8:00AM",
+        "8:00AM - 9:00AM",
+        "9:00AM - 10:00AM",
+        "10:00AM - 11:00AM",
+        "11:00AM - 12:00PM"
+    )
+    val pmTimeSlots = listOf(
+        "12:00PM - 1:00PM",
+        "1:00PM - 2:00PM",
+        "2:00PM - 3:00PM",
+        "3:00PM - 4:00PM",
+        "4:00PM - 5:00PM",
+        "5:00PM - 6:00PM",
+        "6:00PM - 7:00PM",
+        "7:00PM - 8:00PM",
+        "8:00PM - 9:00PM",
+        "9:00PM - 10:00PM",
+        "10:00PM - 11:00PM",
+        "11:00PM - 12:00AM"
+    )
     val checkedItems = BooleanArray(24) // Tracks which time slots are checked
     private lateinit var selectedSlots: MutableList<String>;
     private val items = arrayOf("Dentist", "Dermatologist", "Pediatrician", "Therapist", "Ophthalmologist")
@@ -165,16 +194,21 @@ class DoctorSignUpActivity : AppCompatActivity() {
         builder.setTitle("Select Time Slots")
 
         val view = layoutInflater.inflate(R.layout.dialog_time_slots, null)
-        val listView: ListView = view.findViewById(R.id.list_view_time_slots)
-
-        val adapter = TimeSlotAdapter(this, timeSlots.toList(), checkedItems)
-        listView.adapter = adapter
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-
-        listView.setOnItemClickListener { _, _, position, _ ->
+        val listViewAm: ListView = view.findViewById(R.id.list_view_am_time_slots)
+        val listViewPm: ListView = view.findViewById(R.id.list_view_pm_time_slots)
+        val adapterAm = TimeSlotAdapter(this, amTimeSlots,checkedItems,0)
+        val adapterPm = TimeSlotAdapter(this, pmTimeSlots,checkedItems,12)
+        listViewAm.setOnItemClickListener { _, _, position, _ ->
             checkedItems[position] = !checkedItems[position]
-            adapter.notifyDataSetChanged()
+            adapterAm.notifyDataSetChanged()
         }
+        listViewPm.setOnItemClickListener { _, _, position, _ ->
+            checkedItems[position+12] = !checkedItems[position+12]
+            adapterPm.notifyDataSetChanged()
+        }
+
+        listViewAm.adapter = adapterAm
+        listViewPm.adapter = adapterPm
 
         builder.setView(view)
         builder.setPositiveButton("OK") { _, _ ->
@@ -190,7 +224,7 @@ class DoctorSignUpActivity : AppCompatActivity() {
 
         for (index in checkedItems.indices) {
             if (checkedItems[index]) {
-                selectedSlots.add(timeSlots[index])
+                selectedSlots.add(if (index>11) pmTimeSlots[index-12] else amTimeSlots[index])
             }
         }
 
@@ -198,10 +232,10 @@ class DoctorSignUpActivity : AppCompatActivity() {
         Log.d("dumplist", selectedSlots.toString())
     }
 
-    class TimeSlotAdapter(context: Context, private val timeSlots: List<String>, private val checkedItems: BooleanArray) : ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, timeSlots) {
+    class TimeSlotAdapter(context: Context, private val timeSlots: List<String>, private val checkedItems: BooleanArray, val offset:Int) : ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, timeSlots) {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = super.getView(position, convertView, parent)
-            view.setBackgroundColor(if (checkedItems[position]) Color.GREEN else Color.RED)
+            view.setBackgroundColor(if (checkedItems[position+offset]) ContextCompat.getColor(context, R.color.dgreen) else ContextCompat.getColor(context, R.color.dred))
             return view
         }
     }

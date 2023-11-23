@@ -26,10 +26,9 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelectedListener{
+class PatientActivity : AppCompatActivity(){
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
-    private lateinit var navigationView: NavigationView
     private lateinit var recyclerView: RecyclerView
     private lateinit var mAdapter: MyAdapter
     private lateinit var layoutManager: RecyclerView.LayoutManager
@@ -43,10 +42,8 @@ class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSel
         scheduleButton= findViewById(R.id.btn_findDoc)
         dataViewModel= DataViewModel()
         drawerLayout = findViewById(R.id.drawerLayout)
-        navigationView = findViewById(R.id.navView)
         recyclerView = findViewById(R.id.rv_patients)
         // Set the listener for navigation item clicks
-        navigationView.setNavigationItemSelectedListener(this)
 
         // Create and set the ActionBarDrawerToggle
         actionBarDrawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -89,29 +86,6 @@ class PatientActivity : AppCompatActivity() , NavigationView.OnNavigationItemSel
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation item clicks
-        when (item.itemId) {
-            R.id.doctors -> {
-                val uid= intent.getStringExtra("UID")
-                Log.d("aasdb", uid?:"")
-
-                val intent = Intent(this@PatientActivity, DoctorListActivity::class.java)
-                intent.putExtra("UID",uid)
-                startActivity(intent)
-            }
-
-            R.id.logOut ->{
-                FirebaseAuth.getInstance().signOut()
-                val intent = Intent(this@PatientActivity, MainActivity::class.java)
-                startActivity(intent)
-            }
-        }
-
-        // Close the drawer after handling the click
-        drawerLayout.closeDrawer(navigationView)
-        return true
-    }
     private inner class MyAdapter(
         private val documentList: List<Appointment>,
         private val itemcount: Int,

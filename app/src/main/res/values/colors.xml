@@ -5,4 +5,6 @@
     <color name="gray">#FFBABABA</color>
     <color name="blue">#FF045C9C</color>
     <color name="pink">#FFF8499E</color>
+    <color name="dgreen">#1E4223</color>
+    <color name="dred">#583A3A</color>
 </resources>
