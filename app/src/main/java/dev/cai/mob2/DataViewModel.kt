@@ -115,6 +115,16 @@ class DataViewModel : ViewModel() {
             time = time,
             unix = unix
         )
+        val map = doctor.activeTakenSlots.toMutableMap()
+        val list = mutableListOf<String>(time)
+        if (map.containsKey(date)) {
+            list.addAll(map.get(date)?:listOf())
+        }
+        val doctorb=doctor.copy(activeTakenSlots = map)
+
+        val userRef = FirebaseDatabase.getInstance().getReference("doctors").child(doctor.doctorId).child("activeTakenSlots").child(date)
+        userRef.setValue(list)
+
         val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
         databaseReference.child(appointment.scheduleId).setValue(appointment)
             .addOnSuccessListener {
@@ -135,7 +145,7 @@ class DataViewModel : ViewModel() {
         val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
         val query = databaseReference.orderByChild("doctorId").equalTo(doctorId)
 
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
+        query.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val appointments = mutableListOf<Appointment>()
                 for (snapshot in dataSnapshot.children) {
@@ -177,6 +187,19 @@ class DataViewModel : ViewModel() {
             }
         })
     }
+    fun createAndUploadAppointment(appointment: Appointment) {
+        _dataState.value = DataStates.Loading
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+
+        databaseReference.child(appointment.scheduleId).setValue(appointment)
+            .addOnSuccessListener {
+                _dataState.value = DataStates.createScheduleSuccess(appointment)
+            }
+            .addOnFailureListener { e ->
+                Log.e("DataViewModel", "Failed to upload appointment", e)
+                _dataState.value = DataStates.Error
+            }
+    }
     fun getAllPatients() {
         _dataState.value = DataStates.Loading
         val databaseReference = FirebaseDatabase.getInstance().getReference("patients")
@@ -211,6 +234,34 @@ class DataViewModel : ViewModel() {
                 _dataState.value = DataStates.getAllDoctorsDataSuccess(doctors)
             }
 
+            override fun onCancelled(error: DatabaseError) {
+                _dataState.value = DataStates.Error
+            }
+        })
+    }
+    fun getDoctor(doctorId:String) {
+        _dataState.value = DataStates.Loading
+        val databaseReference = FirebaseDatabase.getInstance().getReference("doctors").child(doctorId)
+
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                    val doctor = snapshot.getValue(Doctor::class.java)
+                _dataState.value = DataStates.getDoctorDataSuccess(doctor!!)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _dataState.value = DataStates.Error
+            }
+        })
+    }
+    fun getPatient(patientId:String) {
+        _dataState.value = DataStates.Loading
+        val databaseReference = FirebaseDatabase.getInstance().getReference("patients").child(patientId)
+
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val patient = snapshot.getValue(Patient::class.java)
+                _dataState.value = DataStates.getPatientDataSuccess(patient!!)
+            }
             override fun onCancelled(error: DatabaseError) {
                 _dataState.value = DataStates.Error
             }

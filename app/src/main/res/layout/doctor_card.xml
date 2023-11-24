@@ -18,15 +18,6 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <ImageButton
-            android:id="@+id/imageButton1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@null"
-            app:srcCompat="@drawable/three_dots"
-            app:tint="@color/gray" />
-
         <ImageView
             android:id="@+id/iv_person"
             android:layout_width="100dp"

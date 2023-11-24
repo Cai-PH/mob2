@@ -39,7 +39,7 @@ class DoctorListAdapter(
                                 doc.rate.toString())
 
             doctorCardBinding.btnBook.setOnClickListener() {
-                val uid= (context as DoctorListActivity).intent.getStringExtra("PUID")
+                val uid= (context as DoctorListActivity).intent.getStringExtra("UID")
                 val intent = Intent(context, ScheduleActivity::class.java)
                 intent.putExtra("PUID",uid)
                 intent.putExtra("DUID",doc.doctorId)

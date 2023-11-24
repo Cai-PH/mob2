@@ -15,6 +15,7 @@ sealed class DataStates {
     data class getAllDoctorsDataSuccess(val users:List<Doctor>) :DataStates()
     data class getAllPatientsDataSuccess(val users:List<Patient>) : DataStates()
     data class getScheduleSuccess(val appointment: Appointment):DataStates()
+    data class createScheduleSuccess(val appointment: Appointment):DataStates()
     data class uploadProfileImageSuccess(val link:String):DataStates()
     data class getSchedulesSuccess(val appointments: List<Appointment>):DataStates()
     data object addScheduleSuccess:DataStates()

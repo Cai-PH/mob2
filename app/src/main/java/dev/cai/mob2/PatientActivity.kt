@@ -74,6 +74,7 @@ class PatientActivity : AppCompatActivity(){
                 else -> {}
             }
         })
+        dataViewModel.getAppointmentsForPatient(intent.getStringExtra("UID").toString())
         mAdapter = MyAdapter(emptyList(),count, this,intent.getStringExtra("PUID")?:"")
         recyclerView.adapter = mAdapter
     }
