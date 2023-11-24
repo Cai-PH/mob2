@@ -15,17 +15,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.navigation.NavigationView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
 import dev.cai.mob2.databinding.AppointmentCardBinding
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 class PatientActivity : AppCompatActivity(){
     private lateinit var drawerLayout: DrawerLayout
@@ -88,6 +79,7 @@ class PatientActivity : AppCompatActivity(){
         return super.onOptionsItemSelected(item)
     }
 
+
     private inner class MyAdapter(
         private val documentList: List<Appointment>,
         private val itemcount: Int,
@@ -107,8 +99,10 @@ class PatientActivity : AppCompatActivity(){
                 appointmentCardBinding.layout12.removeView(appointmentCardBinding.tvLocation)
                 appointmentCardBinding.tvTime.text="When: " + apt.date+" "+apt.time
                 appointmentCardBinding.btnDetails.setOnClickListener() {
-                    intent.putExtra("SID",apt.scheduleId.toString())
-                    val intent = Intent(context, PatientCheckScheduleActivity::class.java)
+                    val intent = Intent(context, AppointmentCardFragment::class.java).apply {
+                        putExtra(AppointmentCardFragment.EXTRA_APPOINTMENT, apt)
+                        putExtra(AppointmentCardFragment.EXTRA_TYPE, type)
+                    }
                     context.startActivity(intent)
                 }
             }

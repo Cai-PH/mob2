@@ -94,8 +94,10 @@ class DoctorActivity : AppCompatActivity(){
                 appointmentCardBinding.layout12.removeView(appointmentCardBinding.tvLocation)
                 appointmentCardBinding.tvTime.text="When: " + apt.date+" "+apt.time
                 appointmentCardBinding.btnDetails.setOnClickListener() {
-                    intent.putExtra("SID",apt.scheduleId.toString())
-                    val intent = Intent(context, PatientCheckScheduleActivity::class.java)
+                    val intent = Intent(context, AppointmentCardFragment::class.java).apply {
+                        putExtra(AppointmentCardFragment.EXTRA_APPOINTMENT, apt)
+                        putExtra(AppointmentCardFragment.EXTRA_TYPE, type)
+                    }
                     context.startActivity(intent)
                 }
             }

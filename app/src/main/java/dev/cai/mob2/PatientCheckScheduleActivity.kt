@@ -1,4 +1,6 @@
 package dev.cai.mob2
 
-class PatientCheckScheduleActivity {
+import androidx.fragment.app.Fragment
+
+class CheckScheduleFragment:Fragment() {
 }

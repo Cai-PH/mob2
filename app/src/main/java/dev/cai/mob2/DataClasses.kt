@@ -1,5 +1,7 @@
 package dev.cai.mob2
 
+import java.io.Serializable
+
 data class Patient(
     val patientId: String = "",
     val email: String = "",
@@ -8,7 +10,7 @@ data class Patient(
     val middleName: String = "",
     val phoneNo: String = "",
     val profilePicLink: String = ""
-)
+) :Serializable
 data class Doctor(
     val doctorId: String = "",
     val email: String = "",
@@ -22,7 +24,7 @@ data class Doctor(
     var activeTakenSlots: Map<String, List<String>> = emptyMap(),
     val timeSlotsSettings: List<String> =emptyList(),
     val profilePicLink: String = ""
-)
+):Serializable
 
 
 data class Appointment(
@@ -45,8 +47,8 @@ data class Appointment(
     val date: String = "",
     val time: String = "",
     val unix: Long = 0
-)
+):Serializable
 data class User(
     val userId: String = "",
     val userType:String =""
-)
+):Serializable

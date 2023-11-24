@@ -120,7 +120,6 @@ class DataViewModel : ViewModel() {
         if (map.containsKey(date)) {
             list.addAll(map.get(date)?:listOf())
         }
-        val doctorb=doctor.copy(activeTakenSlots = map)
 
         val userRef = FirebaseDatabase.getInstance().getReference("doctors").child(doctor.doctorId).child("activeTakenSlots").child(date)
         userRef.setValue(list)
@@ -261,6 +260,38 @@ class DataViewModel : ViewModel() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val patient = snapshot.getValue(Patient::class.java)
                 _dataState.value = DataStates.getPatientDataSuccess(patient!!)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _dataState.value = DataStates.Error
+            }
+        })
+    }
+
+    fun deleteAppointment(appointment: Appointment) {
+        _dataState.value = DataStates.Loading
+
+        var databaseReference =
+            FirebaseDatabase.getInstance().getReference("doctors").child(appointment.doctorId)
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val doctor = snapshot.getValue(Doctor::class.java)!!
+                val map = doctor.activeTakenSlots.toMutableMap()
+                if (map.containsKey(appointment.date)) {
+                    val list = map.get(appointment.date)!!.toMutableList().removeAll(listOf(appointment.time))
+
+                    val userRef = FirebaseDatabase.getInstance().getReference("doctors").child(appointment.doctorId).child("activeTakenSlots").child(appointment.date)
+                    userRef.setValue(list)
+
+                    databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+                    databaseReference.child(appointment.scheduleId).removeValue()
+                        .addOnSuccessListener {
+                            _dataState.value = DataStates.deleteScheduleSuccess
+                        }
+                        .addOnFailureListener {
+                            _dataState.value = DataStates.Error
+                        }
+                }
             }
             override fun onCancelled(error: DatabaseError) {
                 _dataState.value = DataStates.Error
