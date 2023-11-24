@@ -19,6 +19,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.squareup.picasso.Picasso
 import dev.cai.mob2.databinding.AppointmentCardBinding
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -67,7 +68,7 @@ class PatientActivity : AppCompatActivity(){
             when (dataState) {
                 is DataStates.getSchedulesSuccess -> {
                     count=dataState.appointments.size
-                    mAdapter = MyAdapter(dataState.appointments,count,this,intent.getStringExtra("PUID")?:"")
+                    mAdapter = MyAdapter(dataState.appointments,count,this)
                     recyclerView.adapter = mAdapter
                 }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
@@ -75,7 +76,7 @@ class PatientActivity : AppCompatActivity(){
             }
         })
         dataViewModel.getAppointmentsForPatient(intent.getStringExtra("UID").toString())
-        mAdapter = MyAdapter(emptyList(),count, this,intent.getStringExtra("PUID")?:"")
+        mAdapter = MyAdapter(emptyList(),count, this)
         recyclerView.adapter = mAdapter
     }
 
@@ -90,8 +91,7 @@ class PatientActivity : AppCompatActivity(){
     private inner class MyAdapter(
         private val documentList: List<Appointment>,
         private val itemcount: Int,
-        private val context: Context,
-        private val puid: String) : RecyclerView.Adapter<PatientActivity.MyAdapter.ViewHolder>() {
+        private val context: Context) : RecyclerView.Adapter<PatientActivity.MyAdapter.ViewHolder>() {
 
         // ViewHolder class
         inner class ViewHolder(private val appointmentCardBinding: AppointmentCardBinding,private val context: Context) : RecyclerView.ViewHolder(appointmentCardBinding.root) {
@@ -99,12 +99,14 @@ class PatientActivity : AppCompatActivity(){
                 apt.let {
 
                 }
+                Picasso.get()
+                    .load(apt.dprofilePicLink)
+                    .into(appointmentCardBinding.imageButton1)
                 appointmentCardBinding.tvFee.text=apt.price+" PHP"
                 appointmentCardBinding.tvName.text= apt.dlastName+ ", " + apt.dfirstName+ " " + apt.dmiddleName + "."
                 appointmentCardBinding.layout12.removeView(appointmentCardBinding.tvLocation)
                 appointmentCardBinding.tvTime.text="When: " + apt.date+" "+apt.time
                 appointmentCardBinding.btnDetails.setOnClickListener() {
-                    val uid= (context as PatientActivity).intent.getStringExtra("PUID")
                     intent.putExtra("SID",apt.scheduleId.toString())
                     val intent = Intent(context, PatientCheckScheduleActivity::class.java)
                     context.startActivity(intent)

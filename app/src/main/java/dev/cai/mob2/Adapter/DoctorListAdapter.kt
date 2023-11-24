@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 import dev.cai.mob2.Doctor
 import dev.cai.mob2.DoctorListActivity
 import dev.cai.mob2.ScheduleActivity
@@ -37,7 +38,9 @@ class DoctorListAdapter(
 
                         doctorCardBinding.tvFee.text = ("PHP " +
                                 doc.rate.toString())
-
+            Picasso.get()
+                .load(doc.profilePicLink)
+                .into(doctorCardBinding.ivPerson)
             doctorCardBinding.btnBook.setOnClickListener() {
                 val uid= (context as DoctorListActivity).intent.getStringExtra("UID")
                 val intent = Intent(context, ScheduleActivity::class.java)

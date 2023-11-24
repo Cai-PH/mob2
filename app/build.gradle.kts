@@ -54,4 +54,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation ("com.google.android.gms:play-services-auth:20.6.0")
     implementation ("com.google.firebase:firebase-appcheck-safetynet:16.0.0-beta01")
+    implementation ("com.squareup.picasso:picasso:2.71828")
 }
