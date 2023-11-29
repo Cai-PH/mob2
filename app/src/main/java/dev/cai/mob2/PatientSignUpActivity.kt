@@ -11,6 +11,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.lifecycle.Observer
+import dev.cai.mob2.databinding.ActivitySignupPatient2Binding
+import dev.cai.mob2.databinding.ActivitySignupPatientBinding
 
 class PatientSignUpActivity : AppCompatActivity() {
 
@@ -20,23 +22,32 @@ class PatientSignUpActivity : AppCompatActivity() {
     private lateinit var phoneNumberEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var doneButton: Button
+    private lateinit var nextButton: Button
+    private lateinit var backButton: Button
     private lateinit var dataViewModel: DataViewModel
     private lateinit var imageView: ImageView
     private var isEmpty=true
     private lateinit var curUri:Uri
+    private lateinit var patientBinding: ActivitySignupPatientBinding
+    private lateinit var patient2Binding: ActivitySignupPatient2Binding
+    var curState=0;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        patientBinding= ActivitySignupPatientBinding.inflate(layoutInflater)
+        patient2Binding= ActivitySignupPatient2Binding.inflate(layoutInflater)
         dataViewModel= DataViewModel()
         setContentView(R.layout.activity_signup_patient)
         val uid = intent.getStringExtra("UID")
-        firstNameEditText = findViewById(R.id.inp_fname)
-        middleNameEditText = findViewById(R.id.inp_mname)
-        lastNameEditText = findViewById(R.id.inp_lname)
-        lastNameEditText = findViewById(R.id.inp_lname)
-        phoneNumberEditText = findViewById(R.id.inp_phone)
-        emailEditText = findViewById(R.id.inp_email)
-        imageView=findViewById(R.id.inp_Img)
-        doneButton = findViewById(R.id.btn_done)
+        firstNameEditText = patientBinding.inpFname
+        middleNameEditText = patientBinding.inpMname
+        lastNameEditText = patientBinding.inpLname
+        phoneNumberEditText = patientBinding.inpPhone
+        emailEditText = patientBinding.inpEmail
+        imageView=patientBinding.inpImg
+
+        doneButton = patient2Binding.btnNext
+        backButton = patient2Binding.btnBack
+        nextButton = patientBinding.btnNext
         imageView.setOnLongClickListener(){
             openImageChooser()
             true
@@ -45,6 +56,14 @@ class PatientSignUpActivity : AppCompatActivity() {
             if (validateInputs()) {
                 dataViewModel.uploadProfilePic(curUri)
             }
+        }
+        nextButton.setOnClickListener {
+            curState=1
+            setContentView(patient2Binding.root)
+        }
+        backButton.setOnClickListener {
+            curState=0
+            setContentView(patientBinding.root)
         }
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
@@ -130,5 +149,13 @@ class PatientSignUpActivity : AppCompatActivity() {
         }
     Log.d("sendhelp","a")
         return true
+    }
+
+    override fun onBackPressed() {
+        if(curState==0) {
+            super.onBackPressed()
+        } else {
+            setContentView(patientBinding.root)
+        }
     }
 }

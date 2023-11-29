@@ -30,6 +30,7 @@ class PatientActivity : AppCompatActivity(){
     private var count:Int=0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_patient_home)
         scheduleButton= findViewById(R.id.btn_findDoc)
         dataViewModel= DataViewModel()

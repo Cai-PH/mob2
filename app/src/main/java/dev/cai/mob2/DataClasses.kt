@@ -9,7 +9,10 @@ data class Patient(
     val lastName: String = "",
     val middleName: String = "",
     val phoneNo: String = "",
-    val profilePicLink: String = ""
+    val profilePicLink: String = "",
+    val medicalHistory: String = "",
+    val allergies: String= "",
+    val recentMedications: String=""
 ) :Serializable
 data class Doctor(
     val doctorId: String = "",

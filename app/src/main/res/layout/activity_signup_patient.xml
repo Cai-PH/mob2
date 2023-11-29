@@ -30,10 +30,17 @@
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="50dp"
+                android:layout_marginBottom="10dp"
                 android:fontFamily="@font/inter"
                 android:text="Register your account"
                 android:textColor="@color/gray" />
+
+            <TextView
+                android:id="@+id/tv_imgdesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="Hold to select profile pic" />
 
             <ImageView
                 android:id="@+id/inp_Img"
@@ -207,12 +214,12 @@
                 android:orientation="vertical"/>
 
             <Button
-                android:id="@+id/btn_done"
+                android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/inter_bold"
-                android:text="@string/done"
+                android:text="@string/Next"
                 android:backgroundTint="@color/blue"
                 android:textAllCaps="true"
                 app:cornerRadius="3dp" />

@@ -10,6 +10,8 @@
     <string name="signUp">Sign Up</string>
 
     <string name="google_web_client_id">871279639328-tglsq3gj3vtcup9h002qgb1g0f5pi1t5.apps.googleusercontent.com</string>
+    <string name="Next">Next</string>
+    <string name="Back">Back</string>
     <string-array name="users">
         <item>Patient</item>
         <item>Doctor</item>
