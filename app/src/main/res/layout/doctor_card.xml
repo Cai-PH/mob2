@@ -52,6 +52,14 @@
             android:layout_marginBottom="10dp"
             android:text="TextView"
             android:textColor="@color/gray" />
+        <TextView
+            android:id="@+id/tv_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:text="TextView"
+            android:textColor="@color/gray" />
 
         <Button
             android:id="@+id/btn_book"

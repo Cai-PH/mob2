@@ -163,11 +163,37 @@ class DataViewModel : ViewModel() {
             }
         })
     }
+    fun getLinkedPatientDocAppointment(doctorId: String,patientId:String){
+
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        val query = databaseReference.orderByChild("doctorId").equalTo(doctorId)
+
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val appointments = mutableListOf<Appointment>()
+                for (snapshot in dataSnapshot.children) {
+                    val appointment = snapshot.getValue(Appointment::class.java)
+                    appointment?.let {
+                        if(it.patientId==patientId) {
+                            appointments.add(it)
+                        }
+                    }
+                }
+                _dataState.value=DataStates.getSchedulesSuccess(appointments)
+                // Here you have a list of appointments for the specified doctor
+                // You can pass this list to the UI or handle it as needed
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                _dataState.value=DataStates.Error
+            }
+        })
+    }
     fun getAppointmentsForPatient(patientId: String) {
         val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
         val query = databaseReference.orderByChild("patientId").equalTo(patientId)
 
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
+        query.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val appointments = mutableListOf<Appointment>()
                 for (snapshot in dataSnapshot.children) {
@@ -278,8 +304,8 @@ class DataViewModel : ViewModel() {
                 val doctor = snapshot.getValue(Doctor::class.java)!!
                 val map = doctor.activeTakenSlots.toMutableMap()
                 if (map.containsKey(appointment.date)) {
-                    val list = map.get(appointment.date)!!.toMutableList().removeAll(listOf(appointment.time))
-
+                    val list = map.get(appointment.date)!!.toMutableList()
+                    list.removeAll(listOf(appointment.time))
                     val userRef = FirebaseDatabase.getInstance().getReference("doctors").child(appointment.doctorId).child("activeTakenSlots").child(appointment.date)
                     userRef.setValue(list)
 

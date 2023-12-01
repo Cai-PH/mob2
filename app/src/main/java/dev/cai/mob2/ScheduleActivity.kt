@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import java.time.LocalDateTime
@@ -36,8 +37,24 @@ class ScheduleActivity:AppCompatActivity() {
 
         doneButton.setOnClickListener {
             if (validateFields()) {
-                createAndSendSchedule()
-                it.isEnabled = false
+                if(datePicker.year<Calendar.getInstance().get(Calendar.YEAR)) {
+                    Toast.makeText(this, "Please pick a valid date", Toast.LENGTH_SHORT).show()
+
+                } else if(datePicker.year==Calendar.getInstance().get(Calendar.YEAR)){
+                    if(datePicker.month<Calendar.getInstance().get(Calendar.MONTH)) {
+                        Toast.makeText(this, "Please pick a valid date", Toast.LENGTH_SHORT).show()
+                    } else if(datePicker.month==Calendar.getInstance().get(Calendar.MONTH)&&datePicker.dayOfMonth<Calendar.getInstance().get(Calendar.DAY_OF_MONTH)) {
+                        Toast.makeText(this, "Please pick a valid date", Toast.LENGTH_SHORT).show()
+                    } else {
+                        createAndSendSchedule()
+                        it.isEnabled = false
+                        onBackPressed()
+                    }
+                } else {
+                    createAndSendSchedule()
+                    it.isEnabled = false
+                    onBackPressed()
+                }
             }
         }
 
@@ -94,7 +111,7 @@ class ScheduleActivity:AppCompatActivity() {
     }
     private fun getUnixLong(time:String, day: Int, month: Int, year: Int):Long {
         Log.d("time check",convertTimeTo24Hour(time).toString()+" "+year+month+day)
-        val localDateTime = LocalDateTime.of(year, month + 1, day, convertTimeTo24Hour(time)!!,0)
+        val localDateTime = LocalDateTime.of(year, month, day, convertTimeTo24Hour(time)!!,0)
 
         return localDateTime.toEpochSecond(ZoneOffset.UTC)
     }

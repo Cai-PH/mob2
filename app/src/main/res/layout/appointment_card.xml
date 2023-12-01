@@ -22,10 +22,8 @@
             android:id="@+id/imageButton1"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_gravity="right"
-            android:background="@null"
-            app:srcCompat="@drawable/medilink_logo_01_400"
-            app:tint="@color/gray" />
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/medilink_logo_01_400"/>
 
         <TextView
             android:id="@+id/tv_name"

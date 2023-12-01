@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import dev.cai.mob2.Doctor
 import dev.cai.mob2.DoctorListActivity
+import dev.cai.mob2.PatientActivity
 import dev.cai.mob2.ScheduleActivity
 import dev.cai.mob2.databinding.DoctorCardBinding
 
@@ -42,13 +43,14 @@ class DoctorListAdapter(
                 .load(doc.profilePicLink)
                 .into(doctorCardBinding.ivPerson)
             doctorCardBinding.btnBook.setOnClickListener() {
-                val uid= (context as DoctorListActivity).intent.getStringExtra("UID")
+                val uid= (context as PatientActivity).intent.getStringExtra("UID")
                 val intent = Intent(context, ScheduleActivity::class.java)
                 intent.putExtra("PUID",uid)
                 intent.putExtra("DUID",doc.doctorId)
                 Log.d("asdc",uid+" " + doc.doctorId)
                 context.startActivity(intent)
             }
+            doctorCardBinding.tvBio.text=doc.about
         }
     }
 

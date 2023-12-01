@@ -97,6 +97,44 @@ class PatientActivity : AppCompatActivity(){
             }
 
         })
+        patientHomeBinding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    setContentView(patientHomeBinding.root)
+                    true
+                }
+                R.id.nav_doc -> {
+                    activityDoctorsBinding.bottomNavigation.selectedItemId=R.id.nav_doc
+                    setContentView(activityDoctorsBinding.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    setContentView(patientHomeBinding.root)
+                    true
+                    true
+                }
+                else -> false
+            }
+
+        }
+        activityDoctorsBinding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    patientHomeBinding.bottomNavigation.selectedItemId=R.id.nav_appts
+                    setContentView(patientHomeBinding.root)
+                    true
+                }
+                R.id.nav_doc -> {
+                    setContentView(activityDoctorsBinding.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    setContentView(patientHomeBinding.root)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
