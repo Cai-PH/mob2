@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -26,12 +27,18 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BitmapCompat
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dev.cai.mob2.R.color.dgreen
+import dev.cai.mob2.databinding.ActivitySignupDoctor2Binding
+import dev.cai.mob2.databinding.ActivitySignupDoctor3Binding
+import dev.cai.mob2.databinding.ActivitySignupDoctorBinding
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 class DoctorSignUpActivity : AppCompatActivity() {
+    var prevState=0;
     val amTimeSlots = listOf(
         "12:00AM - 1:00AM",
         "1:00AM - 2:00AM",
@@ -72,6 +79,10 @@ class DoctorSignUpActivity : AppCompatActivity() {
     private lateinit var phoneNumberEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var doneButton: Button
+    private lateinit var nextButton: Button
+    private lateinit var next2Button: Button
+    private lateinit var backButton: Button
+    private lateinit var back2Button: Button
     private lateinit var bio:EditText
     private lateinit var rate:EditText
     private lateinit var type:AutoCompleteTextView
@@ -79,6 +90,11 @@ class DoctorSignUpActivity : AppCompatActivity() {
     private lateinit var dataViewModel: DataViewModel
     private lateinit var imageView: ImageView
     private var isEmpty=true
+    private lateinit var binding1: ActivitySignupDoctorBinding
+    private lateinit var binding2: ActivitySignupDoctor2Binding
+    private lateinit var binding3: ActivitySignupDoctor3Binding
+
+
     private lateinit var curUri: Uri
 
     private var link=""
@@ -121,29 +137,48 @@ class DoctorSignUpActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup_doctor)
 
         val uid = intent.getStringExtra("UID")
+        binding1=ActivitySignupDoctorBinding.inflate(layoutInflater)
+        binding2=ActivitySignupDoctor2Binding.inflate(layoutInflater)
+        binding3=ActivitySignupDoctor3Binding.inflate(layoutInflater)
         dataViewModel= DataViewModel()
-        imageView=findViewById(R.id.inp_Img)
-        firstNameEditText = findViewById(R.id.inp_fname)
-        middleNameEditText = findViewById(R.id.inp_mname)
-        lastNameEditText = findViewById(R.id.inp_lname)
-        phoneNumberEditText = findViewById(R.id.inp_phone)
-        emailEditText = findViewById(R.id.inp_email)
-        doneButton = findViewById(R.id.btn_done)
-        bio=findViewById(R.id.inp_bio)
-        rate = findViewById(R.id.inp_rate)
-        type = findViewById(R.id.tv_doctorType)
+        imageView= binding1.inpImg
+        firstNameEditText = binding1.inpFname
+        middleNameEditText = binding1.inpMname
+        lastNameEditText =binding1.inpLname
+        phoneNumberEditText = binding1.inpPhone
+        emailEditText = binding1.inpEmail
+        doneButton = binding3.btnDone
+        backButton=binding2.btnBack
+        back2Button=binding3.btnBack
+        next2Button=binding2.btnNext
+        nextButton=binding1.btnNext
+        bio=binding2.inpBio
+        rate = binding2.inpRate
+        type = binding2.tvDoctorType
         imageView.setOnLongClickListener(){
             openImageChooser()
             true
         }
-        val selectTimeSlotsButton: Button = findViewById(R.id.selectTimeSlotsButton)
-        selectTimeSlotsButton.setOnClickListener {
-            showTimeSlotsDialog()
+        nextButton.setOnClickListener {
+            if (validateInputs()) {
+                setContentView(binding2.root)
+            }
         }
-        autoCompleteTxt = findViewById<AutoCompleteTextView>(R.id.tv_doctorType)
+        next2Button.setOnClickListener {
+            if (validateInputs2()) {
+                prevState=1
+                setContentView(binding3.root)
+            }
+        }
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+        back2Button.setOnClickListener {
+            onBackPressed()
+        }
+        autoCompleteTxt = binding2.tvDoctorType
         adapterItems = ArrayAdapter<String>(this, R.layout.dropdown_users, items)
 
         autoCompleteTxt.setAdapter(adapterItems)
@@ -157,9 +192,19 @@ class DoctorSignUpActivity : AppCompatActivity() {
                 dataViewModel.uploadProfilePic(curUri)
             }
         }
+        selectedSlots= mutableListOf<String>()
+        val adapterAm = TimeSlotAdapter(this, amTimeSlots)
+        val adapterPm = TimeSlotAdapter(this, pmTimeSlots)
+        binding3.recyclerViewAmTimeSlots.adapter=adapterAm
+        binding3.recyclerViewPmTimeSlots.adapter=adapterPm
+        binding3.recyclerViewPmTimeSlots.layoutManager=LinearLayoutManager(this)
+        binding3.recyclerViewAmTimeSlots.layoutManager=LinearLayoutManager(this)
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
                 is DataStates.uploadProfileImageSuccess -> {
+                    selectedSlots.clear()
+                    selectedSlots.addAll(adapterAm.getData().sortedBy { item -> amTimeSlots.indexOf(item) })
+                    selectedSlots.addAll(adapterPm.getData().sortedBy { item -> pmTimeSlots.indexOf(item) })
                     Log.d("sendhelp","b")
                     val doctor = Doctor(
                         doctorId = intent.getStringExtra("UID")!!,
@@ -188,65 +233,83 @@ class DoctorSignUpActivity : AppCompatActivity() {
                 else -> {}
             }
         })
+
+        setContentView(binding1.root)
     }
-    private fun showTimeSlotsDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Select Time Slots")
 
-        val view = layoutInflater.inflate(R.layout.dialog_time_slots, null)
-        val listViewAm: ListView = view.findViewById(R.id.list_view_am_time_slots)
-        val listViewPm: ListView = view.findViewById(R.id.list_view_pm_time_slots)
-        val adapterAm = TimeSlotAdapter(this, amTimeSlots,checkedItems,0)
-        val adapterPm = TimeSlotAdapter(this, pmTimeSlots,checkedItems,12)
-        listViewAm.setOnItemClickListener { _, _, position, _ ->
-            checkedItems[position] = !checkedItems[position]
-            adapterAm.notifyDataSetChanged()
-        }
-        listViewPm.setOnItemClickListener { _, _, position, _ ->
-            checkedItems[position+12] = !checkedItems[position+12]
-            adapterPm.notifyDataSetChanged()
+    class TimeSlotAdapter(context: Context, private val timeSlots: List<String>) : RecyclerView.Adapter<TimeSlotAdapter.ViewHolder>() {
+        private val selectedSlots = mutableListOf<String>()
+
+        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val textView: TextView = itemView.findViewById(android.R.id.text1)
         }
 
-        listViewAm.adapter = adapterAm
-        listViewPm.adapter = adapterPm
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_timeslot, parent, false)
 
-        builder.setView(view)
-        builder.setPositiveButton("OK") { _, _ ->
-            handleSelectedTimeSlots()
+            return ViewHolder(view)
         }
-        builder.setNegativeButton("Cancel", null)
 
-        val dialog = builder.create()
-        dialog.show()
-    }
-    private fun handleSelectedTimeSlots() {
-        val selectedSlots = mutableListOf<String>()
-
-        for (index in checkedItems.indices) {
-            if (checkedItems[index]) {
-                selectedSlots.add(if (index>11) pmTimeSlots[index-12] else amTimeSlots[index])
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val timeSlot = timeSlots[position]
+            holder.textView.text = timeSlot
+            holder.itemView.setBackgroundColor(
+                if (selectedSlots.contains(timeSlot)) Color.GREEN else Color.TRANSPARENT
+            )
+            holder.itemView.setOnClickListener {
+                if (selectedSlots.contains(timeSlot)) {
+                    selectedSlots.remove(timeSlot)
+                } else {
+                    selectedSlots.add(timeSlot)
+                }
+                notifyItemChanged(position)
             }
         }
 
-        this.selectedSlots =selectedSlots
-        Log.d("dumplist", selectedSlots.toString())
+        override fun getItemCount() = timeSlots.size
+        fun getData(): List<String> {
+            return selectedSlots
+        }
     }
 
-    class TimeSlotAdapter(context: Context, private val timeSlots: List<String>, private val checkedItems: BooleanArray, val offset:Int) : ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, timeSlots) {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val view = super.getView(position, convertView, parent)
-            view.setBackgroundColor(if (checkedItems[position+offset]) ContextCompat.getColor(context, R.color.dgreen) else ContextCompat.getColor(context, R.color.dred))
-            return view
+    override fun onBackPressed() {
+        if (prevState==1){
+            prevState=0
+            setContentView(binding2.root)
+        } else if (prevState==0){
+            setContentView(binding1.root)
+        } else {
+            super.onBackPressed()
         }
+    }
+    private fun validateInputs2():Boolean {
+
+        val fee= rate.text.toString().trim();
+        if (bio.text.isEmpty()) {
+
+            bio.error = "Please enter a valid bio"
+            return false
+        };
+        try {
+            fee.toInt()
+        } catch (e: NumberFormatException) {
+            rate.error = "Please enter a valid fee"
+
+            return false
+        }
+        return true;
     }
     private fun validateInputs(): Boolean {
         val firstName = firstNameEditText.text.toString().trim()
         val lastName = lastNameEditText.text.toString().trim()
         val phoneNumber = phoneNumberEditText.text.toString().trim()
         val email = emailEditText.text.toString().trim()
-        val fee= rate.text.toString().trim();
 
-        if(isEmpty) return false
+        if(isEmpty){
+            binding1.tvImgdesc2.error= "Please Select an Image"
+            return false
+        }
         if (firstName.isEmpty()) {
             firstNameEditText.error = "Please enter your first name"
             return false
@@ -275,11 +338,7 @@ class DoctorSignUpActivity : AppCompatActivity() {
             emailEditText.error = "Please enter a valid email"
             return false
         }
-        try {
-            fee.toInt()
-        } catch (e: NumberFormatException) {
-            return false
-        }
+
 
         return true
     }

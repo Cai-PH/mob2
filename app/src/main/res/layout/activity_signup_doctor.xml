@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:padding="40dp"
     android:orientation="vertical">
 
     <ScrollView
@@ -15,7 +14,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="40dp">
 
             <TextView
                 android:id="@+id/tv_signup"
@@ -29,10 +29,16 @@
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="50dp"
                 android:fontFamily="@font/inter"
                 android:text="Register your account"
                 android:textColor="@color/gray" />
+
+            <TextView
+                android:id="@+id/tv_imgdesc2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="Hold to select profile pic" />
 
             <ImageView
                 android:id="@+id/inp_Img"
@@ -198,98 +204,13 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:orientation="vertical"/>
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
-
-                <AutoCompleteTextView
-                    android:id="@+id/tv_doctorType"
-                    android:layout_width="356dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Doctor Type"
-                    android:inputType="none"
-                    android:text="Therapist" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_bio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:fontFamily="@font/inter"
-                    android:text="Bio" />
-
-                <EditText
-                    android:id="@+id/inp_bio"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_marginBottom="20dp"
-                    android:background="@drawable/input"
-                    android:ems="10"
-                    android:hint="I am a psychologist."
-                    android:inputType="none"
-                    android:padding="10dp"
-                    android:textColor="@color/black"
-                    android:textCursorDrawable="@null"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_rate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:fontFamily="@font/inter"
-                    android:text="Rate/hr" />
-
-                <EditText
-                    android:id="@+id/inp_rate"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginBottom="20dp"
-                    android:background="@drawable/input"
-                    android:ems="10"
-                    android:hint="1000/hr"
-                    android:inputType="none"
-                    android:padding="10dp"
-                    android:textColor="@color/black"
-                    android:textCursorDrawable="@null"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
             <Button
-                android:id="@+id/selectTimeSlotsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select Time Slots" />
-            <Button
-                android:id="@+id/btn_done"
+                android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/inter_bold"
-                android:text="@string/done"
+                android:text="@string/next"
                 android:backgroundTint="@color/blue"
                 android:textAllCaps="true"
                 app:cornerRadius="3dp" />

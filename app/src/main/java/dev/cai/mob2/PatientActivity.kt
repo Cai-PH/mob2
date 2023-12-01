@@ -26,7 +26,6 @@ class PatientActivity : AppCompatActivity(){
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var dataViewModel: DataViewModel
     private lateinit var scheduleButton:Button
-
     private var count:Int=0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,5 +121,9 @@ class PatientActivity : AppCompatActivity(){
             Log.d("aasda",itemcount.toString())
             return itemcount
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
     }
 }

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="40dp">
+
+        <TextView
+            android:id="@+id/tv_signup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_bold"
+            android:text="@string/signUp"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:text="Register your account"
+            android:textColor="@color/gray" />
+        <TextView
+            android:id="@+id/tv_desc2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Select Your Schedule Here" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <!-- AM Time Slots RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewAmTimeSlots"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp"/>
+
+            <!-- Space between the two lists -->
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="match_parent" />
+
+            <!-- PM Time Slots RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewPmTimeSlots"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp"/></LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btn_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/inter_bold"
+                android:text="@string/back"
+                android:backgroundTint="@color/blue"
+                android:textAllCaps="true"
+                app:cornerRadius="3dp" />
+            <Button
+                android:id="@+id/btn_done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/inter_bold"
+                android:text="@string/done"
+                android:backgroundTint="@color/blue"
+                android:textAllCaps="true"
+                app:cornerRadius="3dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
