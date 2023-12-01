@@ -51,13 +51,6 @@
                 android:gravity="center"
                 android:text="Phone" />
 
-            <TextView
-                android:id="@+id/tv_doctype"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Specialization" />
 
             <TextView
                 android:id="@+id/tv_docrate"

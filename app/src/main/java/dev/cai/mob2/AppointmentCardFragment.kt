@@ -39,7 +39,6 @@ class AppointmentCardFragment : AppCompatActivity() {
         val dname: TextView = binding.tvDocname
         val demail: TextView = binding.tvDocemail
         val dphone: TextView = binding.tvDocphone
-        val dtype: TextView = binding.tvDoctype
         val drate: TextView = binding.tvDocrate
         val ddate: TextView = binding.tvDate
         val bdemail: ImageButton =binding.btnDemail
@@ -49,9 +48,8 @@ class AppointmentCardFragment : AppCompatActivity() {
         dname.setText(appointment.plastName+", "+appointment.pfirstName + " " + appointment.pmiddleName + ".")
         ddate.setText(appointment.date +" "+ appointment.time)
         drate.setText("Fees: PHP " + appointment.price)
-
-        demail.setText(appointment.demail)
-        dphone.setText(appointment.dphoneNo)
+        demail.setText("Email: " + appointment.demail)
+        dphone.setText("Phone: " + appointment.dphoneNo)
 
         back.setOnClickListener() {
             onBackPressed()

@@ -89,7 +89,6 @@ class DoctorEditDataActivity : AppCompatActivity() {
     private lateinit var back2Button: Button
     private lateinit var bio:EditText
     private lateinit var rate:EditText
-    private lateinit var type:AutoCompleteTextView
 
     private lateinit var dataViewModel: DataViewModel
     private lateinit var imageView: ImageView
@@ -108,7 +107,6 @@ class DoctorEditDataActivity : AppCompatActivity() {
         binding2.tvSignup.setText("Edit Profile")
         binding3.textView3.setText("Edit Your Information")
         binding3.tvSignup.setText("Edit Profile")
-        binding1.textView3
         binding1.inpFname.setText(doctor.firstName)
         binding1.inpMname.setText(doctor.middleName)
         binding1.inpLname.setText(doctor.lastName)
@@ -117,12 +115,12 @@ class DoctorEditDataActivity : AppCompatActivity() {
 
         binding2.inpBio.setText(doctor.about)
         binding2.inpRate.setText(doctor.rate.toString())
-        binding2.tvDoctorType.setText(doctor.type)
         Picasso.get()
             .load(doctor.profilePicLink)
             .into(binding1.inpImg)
         adapterAm.setData(doctor.timeSlotsSettings.intersect(amTimeSlots).toList())
         adapterPm.setData(doctor.timeSlotsSettings.intersect(pmTimeSlots).toList())
+        autoCompleteTxt.setText(doctor.type,false)
     }
     private var link=""
     companion object {
@@ -181,7 +179,6 @@ class DoctorEditDataActivity : AppCompatActivity() {
         nextButton=binding1.btnNext
         bio=binding2.inpBio
         rate = binding2.inpRate
-        type = binding2.tvDoctorType
         imageView.setOnLongClickListener(){
             openImageChooser()
             true
@@ -228,7 +225,7 @@ class DoctorEditDataActivity : AppCompatActivity() {
                         phoneNo = phoneNumberEditText.text.toString(),
                         profilePicLink= this.doctor.profilePicLink,
                         rate = rate.text.toString().toInt(),
-                        type=type.text.toString(),
+                        type=autoCompleteTxt.text.toString(),
                         about=  bio.text.toString(),
                         activeTakenSlots = emptyMap(),
                         timeSlotsSettings = selectedSlots
@@ -263,7 +260,7 @@ class DoctorEditDataActivity : AppCompatActivity() {
                         phoneNo = phoneNumberEditText.text.toString(),
                         profilePicLink= dataState.link,
                         rate = rate.text.toString().toInt(),
-                        type=type.text.toString(),
+                        type=autoCompleteTxt.text.toString(),
                         about=  bio.text.toString(),
                         activeTakenSlots = emptyMap(),
                         timeSlotsSettings = selectedSlots

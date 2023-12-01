@@ -51,8 +51,8 @@ class AppointmentCardDoctorActivity : AppCompatActivity() {
         dname.setText(appointment.plastName+", "+appointment.pfirstName + " " + appointment.pmiddleName + ".")
         ddate.setText(appointment.date +" "+ appointment.time)
 
-        demail.setText(appointment.demail)
-        dphone.setText(appointment.dphoneNo)
+        demail.setText("Email: " + appointment.demail)
+        dphone.setText("Phone: " + appointment.dphoneNo)
 
         back.setOnClickListener() {
             onBackPressed()
