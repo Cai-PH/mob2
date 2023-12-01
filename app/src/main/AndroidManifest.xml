@@ -58,6 +58,10 @@
             android:name=".PatientEditDataActivity"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".AppointmentCardDoctorActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
