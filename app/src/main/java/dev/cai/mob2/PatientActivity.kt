@@ -15,42 +15,42 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.softeng2.Adapter.DoctorListAdapter
 import com.squareup.picasso.Picasso
+import dev.cai.mob2.databinding.ActivityDoctorsBinding
+import dev.cai.mob2.databinding.ActivityPatientHomeBinding
 import dev.cai.mob2.databinding.AppointmentCardBinding
 
 class PatientActivity : AppCompatActivity(){
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
+    private lateinit var patientHomeBinding: ActivityPatientHomeBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var mAdapter: MyAdapter
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var dataViewModel: DataViewModel
     private lateinit var scheduleButton:Button
     private var count:Int=0
+
+
+    private lateinit var activityDoctorsBinding:ActivityDoctorsBinding
+    private lateinit var rvDlist: RecyclerView
+    private lateinit var adapterDlist: DoctorListAdapter
+    private lateinit var dataViewModel2: DataViewModel
+    private var count2:Int=0
+    private lateinit var uid:String;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_patient_home)
-        scheduleButton= findViewById(R.id.btn_findDoc)
+        patientHomeBinding=ActivityPatientHomeBinding.inflate(layoutInflater)
+        scheduleButton= patientHomeBinding.btnFindDoc
         dataViewModel= DataViewModel()
-        drawerLayout = findViewById(R.id.drawerLayout)
-        recyclerView = findViewById(R.id.rv_patients)
-        // Set the listener for navigation item clicks
-
-        // Create and set the ActionBarDrawerToggle
-        actionBarDrawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawerLayout.addDrawerListener(actionBarDrawerToggle)
-        actionBarDrawerToggle.syncState()
+        recyclerView = patientHomeBinding.rvPatients
 
         // Set the action bar's Home button to act as the navigation drawer toggle
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        uid= intent.getStringExtra("UID").toString()
         scheduleButton.setOnClickListener {
-            val uid= intent.getStringExtra("UID")
-            Log.d("aasdb", uid?:"")
-            val intent = Intent(this@PatientActivity, DoctorListActivity::class.java)
-            intent.putExtra("UID",uid)
-            startActivity(intent)
+            setContentView(activityDoctorsBinding.root)
         }
         // Set up the RecyclerView
         layoutManager = LinearLayoutManager(this)
@@ -69,13 +69,38 @@ class PatientActivity : AppCompatActivity(){
         dataViewModel.getAppointmentsForPatient(intent.getStringExtra("UID").toString())
         mAdapter = MyAdapter(emptyList(),count, this)
         recyclerView.adapter = mAdapter
+
+        setContentView(patientHomeBinding.root)
+
+
+        dataViewModel2= DataViewModel()
+        activityDoctorsBinding= ActivityDoctorsBinding.inflate(layoutInflater)
+        dataViewModel2.getAllDoctors()
+
+        adapterDlist = DoctorListAdapter(mutableListOf<Doctor>() ,this,uid)
+        activityDoctorsBinding.rvDoctors.adapter = adapterDlist;
+        activityDoctorsBinding.rvDoctors.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        dataViewModel2.dataState.observe(this, Observer { dataState->
+            when (dataState) {
+                is DataStates.getAllDoctorsDataSuccess -> {
+                    adapterDlist.updateDoctors(dataState.users)
+                    Log.d("initializing doc " ,dataState.users.size.toString() + ""+count)
+                }
+                DataStates.Loading -> {
+                    // Show loading indicator
+                }
+                DataStates.Error -> {
+                    // Handle error
+                }
+
+                else -> {}
+            }
+
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle ActionBarDrawerToggle clicks
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true
-        }
         return super.onOptionsItemSelected(item)
     }
 
@@ -124,6 +149,8 @@ class PatientActivity : AppCompatActivity(){
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        if(false) {
+            super.onBackPressed()
+        }
     }
 }

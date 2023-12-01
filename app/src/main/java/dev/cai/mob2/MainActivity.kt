@@ -28,6 +28,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private var uid = ""
 
+    override fun onResume() {
+        mGoogleSignInClient.signOut()
+        mGoogleSignInClient.revokeAccess()
+        super.onResume()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -52,20 +57,11 @@ class MainActivity : AppCompatActivity() {
 
                     Log.d("aasdc", "test6"+ uid?:"test bcd" )
                 }
-                DataStates.addScheduleSuccess -> TODO()
                 is DataStates.authUserSuccess ->{
                     dataViewModel.getUserData(dataState.uid)
                     uid=dataState.uid
                     Log.d("aasdc", "test3"+ uid?:"test bcd" )
                 }
-                is DataStates.uploadProfileImageSuccess-> TODO()
-                DataStates.deleteScheduleSuccess -> TODO()
-                is DataStates.getAllDoctorsDataSuccess -> TODO()
-                is DataStates.getAllPatientsDataSuccess -> TODO()
-                is DataStates.getDoctorDataSuccess -> TODO()
-                is DataStates.getPatientDataSuccess -> TODO()
-                is DataStates.uploadDoctorDataSuccess -> TODO()
-                is DataStates.uploadPatientDataSuccess -> TODO()
                 is DataStates.userNotExist ->{
                     Log.d("aasdc", "test4"+ uid?:"test bcd" )
                     createUser()

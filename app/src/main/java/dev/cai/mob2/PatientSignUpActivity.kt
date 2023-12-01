@@ -21,6 +21,9 @@ class PatientSignUpActivity : AppCompatActivity() {
     private lateinit var lastNameEditText: EditText
     private lateinit var phoneNumberEditText: EditText
     private lateinit var emailEditText: EditText
+    private lateinit var allergiesEditText: EditText
+    private lateinit var recentMedEditText: EditText
+    private lateinit var medHistEditText: EditText
     private lateinit var doneButton: Button
     private lateinit var nextButton: Button
     private lateinit var backButton: Button
@@ -36,7 +39,7 @@ class PatientSignUpActivity : AppCompatActivity() {
         patientBinding= ActivitySignupPatientBinding.inflate(layoutInflater)
         patient2Binding= ActivitySignupPatient2Binding.inflate(layoutInflater)
         dataViewModel= DataViewModel()
-        setContentView(R.layout.activity_signup_patient)
+        setContentView(patientBinding.root)
         val uid = intent.getStringExtra("UID")
         firstNameEditText = patientBinding.inpFname
         middleNameEditText = patientBinding.inpMname
@@ -48,18 +51,25 @@ class PatientSignUpActivity : AppCompatActivity() {
         doneButton = patient2Binding.btnNext
         backButton = patient2Binding.btnBack
         nextButton = patientBinding.btnNext
+        allergiesEditText=patient2Binding.inpAllergies
+        medHistEditText=patient2Binding.inpMedhist
+        recentMedEditText=patient2Binding.inpRecentmed
         imageView.setOnLongClickListener(){
             openImageChooser()
             true
         }
+
         doneButton.setOnClickListener {
-            if (validateInputs()) {
+            if (validateInputs2()) {
                 dataViewModel.uploadProfilePic(curUri)
             }
         }
         nextButton.setOnClickListener {
-            curState=1
-            setContentView(patient2Binding.root)
+
+            if (validateInputs()) {
+                curState=1
+                setContentView(patient2Binding.root)
+            }
         }
         backButton.setOnClickListener {
             curState=0
@@ -75,7 +85,10 @@ class PatientSignUpActivity : AppCompatActivity() {
                         lastName= lastNameEditText.text.toString(),
                         middleName = middleNameEditText.text.toString(),
                         phoneNo = phoneNumberEditText.text.toString(),
-                        profilePicLink= dataState.link)
+                        profilePicLink= dataState.link,
+                        medicalHistory = medHistEditText.text.toString(),
+                        allergies = allergiesEditText.text.toString(),
+                        recentMedications = recentMedEditText.text.toString())
 
                     dataViewModel.createPatient(patient)
                     Log.d("sendhelp",dataState.link)
@@ -112,6 +125,24 @@ class PatientSignUpActivity : AppCompatActivity() {
             curUri=imageUri!!
             isEmpty=false;
         }
+    }
+    private fun validateInputs2(): Boolean {
+        val allergies = allergiesEditText.text.toString().trim()
+        val medhist = medHistEditText.text.toString().trim()
+        val recentmed = recentMedEditText.text.toString().trim()
+        if (allergies.isEmpty()) {
+            allergiesEditText.error = "Please enter your first name"
+            return false
+        }
+        if (medhist.isEmpty()) {
+            medHistEditText.error = "Please enter your first name"
+            return false
+        }
+        if (recentmed.isEmpty()) {
+            recentMedEditText.error = "Please enter your first name"
+            return false
+        }
+        return true
     }
     private fun validateInputs(): Boolean {
         val firstName = firstNameEditText.text.toString().trim()
