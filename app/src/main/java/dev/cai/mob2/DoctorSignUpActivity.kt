@@ -241,7 +241,7 @@ class DoctorSignUpActivity : AppCompatActivity() {
         private val selectedSlots = mutableListOf<String>()
 
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(android.R.id.text1)
+            val textView: TextView = itemView.findViewById(R.id.item123)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
