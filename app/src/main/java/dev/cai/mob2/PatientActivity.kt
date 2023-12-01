@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.squareup.picasso.Picasso
 import dev.cai.mob2.databinding.ActivityDoctorsBinding
 import dev.cai.mob2.databinding.ActivityPatientHomeBinding
 import dev.cai.mob2.databinding.AppointmentCardBinding
+import dev.cai.mob2.databinding.PatientprofileBinding
 
 class PatientActivity : AppCompatActivity(){
     private lateinit var patientHomeBinding: ActivityPatientHomeBinding
@@ -32,17 +34,24 @@ class PatientActivity : AppCompatActivity(){
 
 
     private lateinit var activityDoctorsBinding:ActivityDoctorsBinding
+    private lateinit var patientprofileBinding: PatientprofileBinding
     private lateinit var rvDlist: RecyclerView
     private lateinit var adapterDlist: DoctorListAdapter
     private lateinit var dataViewModel2: DataViewModel
+    private lateinit var dataViewModel3: DataViewModel
     private var count2:Int=0
     private lateinit var uid:String;
+    private var patient= Patient()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        patientprofileBinding= PatientprofileBinding.inflate(layoutInflater)
         patientHomeBinding=ActivityPatientHomeBinding.inflate(layoutInflater)
+        activityDoctorsBinding= ActivityDoctorsBinding.inflate(layoutInflater)
+
         scheduleButton= patientHomeBinding.btnFindDoc
         dataViewModel= DataViewModel()
+        dataViewModel2= DataViewModel()
+        dataViewModel3= DataViewModel()
         recyclerView = patientHomeBinding.rvPatients
 
         // Set the action bar's Home button to act as the navigation drawer toggle
@@ -55,26 +64,37 @@ class PatientActivity : AppCompatActivity(){
         // Set up the RecyclerView
         layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
+        dataViewModel3.dataState.observe(this, Observer { dataState ->
+            when (dataState) {
+                DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
+                is DataStates.getPatientDataSuccess -> {
+                    patient=dataState.patient
+                    patientProfileInit()
+                }
+                else -> {}
+            }
+        })
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
                 is DataStates.getSchedulesSuccess -> {
                     count=dataState.appointments.size
-                    mAdapter = MyAdapter(dataState.appointments,count,this)
+                    val appointments=dataState.appointments.sortedWith(compareBy({it.unix}))
+                    mAdapter = MyAdapter(appointments,count,this)
                     recyclerView.adapter = mAdapter
                 }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
                 else -> {}
             }
         })
+        dataViewModel3.getPatient(uid)
         dataViewModel.getAppointmentsForPatient(intent.getStringExtra("UID").toString())
+
         mAdapter = MyAdapter(emptyList(),count, this)
         recyclerView.adapter = mAdapter
 
         setContentView(patientHomeBinding.root)
 
 
-        dataViewModel2= DataViewModel()
-        activityDoctorsBinding= ActivityDoctorsBinding.inflate(layoutInflater)
         dataViewModel2.getAllDoctors()
 
         adapterDlist = DoctorListAdapter(mutableListOf<Doctor>() ,this,uid)
@@ -109,13 +129,12 @@ class PatientActivity : AppCompatActivity(){
                     true
                 }
                 R.id.nav_profile -> {
-                    setContentView(patientHomeBinding.root)
-                    true
+                    patientprofileBinding.bottomNavigation.selectedItemId=R.id.nav_profile
+                    setContentView(patientprofileBinding.root)
                     true
                 }
                 else -> false
             }
-
         }
         activityDoctorsBinding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -129,12 +148,15 @@ class PatientActivity : AppCompatActivity(){
                     true
                 }
                 R.id.nav_profile -> {
-                    setContentView(patientHomeBinding.root)
+                    patientprofileBinding.bottomNavigation.selectedItemId=R.id.nav_profile
+
+                    setContentView(patientprofileBinding.root)
                     true
                 }
                 else -> false
             }
         }
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -142,7 +164,49 @@ class PatientActivity : AppCompatActivity(){
         return super.onOptionsItemSelected(item)
     }
 
+    fun patientProfileInit() {
 
+        patientprofileBinding.tvName.text=patient.lastName + ", " + patient.firstName + " " + patient.middleName + "."
+        patientprofileBinding.tvEmail.text=patient.email
+        patientprofileBinding.tvPhoneNo.text=patient.phoneNo
+        patientprofileBinding.tvMedicalHistory.text=patient.medicalHistory
+        patientprofileBinding.tvAllergies.text=patient.allergies
+        patientprofileBinding.tvRecentMedications.text=patient.recentMedications
+        patientprofileBinding.btnLogout.setOnClickListener {
+            val intent = Intent(this@PatientActivity, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
+        }
+        Picasso.get()
+            .load(patient.profilePicLink)
+            .into(patientprofileBinding.imgPfp)
+        patientprofileBinding.btnEdit.setOnClickListener {
+            val intent = Intent(this@PatientActivity, PatientEditDataActivity::class.java)
+            intent.putExtra("patientdata",patient)
+            startActivity(intent)
+        }
+        patientprofileBinding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    patientHomeBinding.bottomNavigation.selectedItemId=R.id.nav_appts
+                    setContentView(patientHomeBinding.root)
+                    true
+                }
+                R.id.nav_doc -> {
+                    activityDoctorsBinding.bottomNavigation.selectedItemId=R.id.nav_doc
+                    setContentView(activityDoctorsBinding.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    setContentView(patientprofileBinding.root)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
     private inner class MyAdapter(
         private val documentList: List<Appointment>,
         private val itemcount: Int,

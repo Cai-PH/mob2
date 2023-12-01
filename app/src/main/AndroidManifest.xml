@@ -50,6 +50,14 @@
             android:name=".AppointmentCardFragment"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".DoctorEditDataActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".PatientEditDataActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>

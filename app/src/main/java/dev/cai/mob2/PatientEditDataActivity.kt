@@ -11,10 +11,11 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.lifecycle.Observer
+import com.squareup.picasso.Picasso
 import dev.cai.mob2.databinding.ActivitySignupPatient2Binding
 import dev.cai.mob2.databinding.ActivitySignupPatientBinding
 
-class PatientSignUpActivity : AppCompatActivity() {
+class PatientEditDataActivity : AppCompatActivity() {
 
     private lateinit var firstNameEditText: EditText
     private lateinit var middleNameEditText: EditText
@@ -34,9 +35,29 @@ class PatientSignUpActivity : AppCompatActivity() {
     private lateinit var patientBinding: ActivitySignupPatientBinding
     private lateinit var patient2Binding: ActivitySignupPatient2Binding
     var curState=0;
+    private lateinit var patient:Patient
+    private lateinit var tempPatient:Patient
+    private fun loadData() {
+        patientBinding.textView3.setText("Edit Your Information")
+        patientBinding.tvSignup.setText("Edit Profile")
+        patient2Binding.textView3.setText("Edit Your Information")
+        patient2Binding.tvSignup.setText("Edit Profile")
+        patientBinding.inpFname.setText(patient.firstName)
+        patientBinding.inpMname.setText(patient.middleName)
+        patientBinding.inpLname.setText(patient.lastName)
+        patientBinding.inpPhone.setText(patient.phoneNo)
+        patientBinding.inpEmail.setText(patient.email)
 
+        patient2Binding.inpAllergies.setText(patient.allergies)
+        patient2Binding.inpMedhist.setText(patient.medicalHistory)
+        patient2Binding.inpRecentmed.setText(patient.recentMedications)
+        Picasso.get()
+            .load(patient.profilePicLink)
+            .into(patientBinding.inpImg)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        patient = (intent.getSerializableExtra("patientdata") as? Patient)!!
         patientBinding= ActivitySignupPatientBinding.inflate(layoutInflater)
         patient2Binding= ActivitySignupPatient2Binding.inflate(layoutInflater)
         dataViewModel= DataViewModel()
@@ -59,10 +80,27 @@ class PatientSignUpActivity : AppCompatActivity() {
             openImageChooser()
             true
         }
-
         doneButton.setOnClickListener {
             if (validateInputs2()) {
-                dataViewModel.uploadProfilePic(curUri)
+                if (::curUri.isInitialized) dataViewModel.uploadProfilePic(curUri) else {
+
+                    val patient = Patient(
+                        patientId = this.patient.patientId,
+                        firstName = firstNameEditText.text.toString(),
+                        email= emailEditText.text.toString(),
+                        lastName= lastNameEditText.text.toString(),
+                        middleName = middleNameEditText.text.toString(),
+                        phoneNo = phoneNumberEditText.text.toString(),
+                        profilePicLink= patient.profilePicLink,
+                        medicalHistory = medHistEditText.text.toString(),
+                        allergies = allergiesEditText.text.toString(),
+                        recentMedications = recentMedEditText.text.toString())
+                    tempPatient=patient
+                    dataViewModel.createPatient(patient)
+                    Log.d("sendhelp",patient.profilePicLink)
+                    dataViewModel.createUser(this.patient.patientId,"Patient")
+                }
+
             }
         }
         nextButton.setOnClickListener {
@@ -80,7 +118,7 @@ class PatientSignUpActivity : AppCompatActivity() {
             when (dataState) {
                 is DataStates.uploadProfileImageSuccess ->{
                     val patient = Patient(
-                        patientId = intent.getStringExtra("UID")!!,
+                        patientId = this.patient.patientId,
                         firstName = firstNameEditText.text.toString(),
                         email= emailEditText.text.toString(),
                         lastName= lastNameEditText.text.toString(),
@@ -91,20 +129,28 @@ class PatientSignUpActivity : AppCompatActivity() {
                         allergies = allergiesEditText.text.toString(),
                         recentMedications = recentMedEditText.text.toString())
 
+                    tempPatient=patient
                     dataViewModel.createPatient(patient)
                     Log.d("sendhelp",dataState.link)
-                    dataViewModel.createUser(intent.getStringExtra("UID")!!,"Patient")
+                    dataViewModel.createUser(this.patient.patientId,"Patient")
                 }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
                 DataStates.createUserSuccess -> {
-                    val intent = Intent(this@PatientSignUpActivity, PatientActivity::class.java)
-                    intent.putExtra("UID",uid)
-                    startActivity(intent);
-            }
+                    dataViewModel.getAppointmentsForPatient(tempPatient.patientId)
+
+                }
+                is DataStates.getSchedulesSuccess -> {
+                    dataViewModel.updateAppointmentsPatient(dataState.appointments,tempPatient)
+                }
+                DataStates.modifypatientappointments -> {
+                    curState=0
+                    onBackPressed()
+                }
                 // Handle other states as needed
                 else -> {}
             }
         })
+        loadData()
     }
 
     companion object {
@@ -150,7 +196,6 @@ class PatientSignUpActivity : AppCompatActivity() {
         val lastName = lastNameEditText.text.toString().trim()
         val phoneNumber = phoneNumberEditText.text.toString().trim()
         val email = emailEditText.text.toString().trim()
-        if(isEmpty) return false
         if (firstName.isEmpty()) {
             firstNameEditText.error = "Please enter your first name"
             return false
@@ -179,7 +224,7 @@ class PatientSignUpActivity : AppCompatActivity() {
             emailEditText.error = "Please enter a valid email"
             return false
         }
-    Log.d("sendhelp","a")
+        Log.d("sendhelp","a")
         return true
     }
 
@@ -187,6 +232,7 @@ class PatientSignUpActivity : AppCompatActivity() {
         if(curState==0) {
             super.onBackPressed()
         } else {
+             curState=0
             setContentView(patientBinding.root)
         }
     }

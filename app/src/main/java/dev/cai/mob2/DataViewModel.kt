@@ -1,9 +1,7 @@
 package dev.cai.mob2
 
 import android.net.Uri
-import android.provider.ContactsContract.Data
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -92,6 +90,50 @@ class DataViewModel : ViewModel() {
         })
 
     }
+    fun updateAppointmentsPatient(appointments:List<Appointment>,updatedPatient: Patient) {
+                val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+                appointments.forEach { appointment ->
+                    Log.d("asdad",appointment.pmiddleName+ updatedPatient.middleName)
+                    val appointmentcopy = appointment.copy(
+                        patientId = updatedPatient.patientId,
+                                pfirstName = updatedPatient.firstName,
+                                plastName = updatedPatient.lastName,
+                                pmiddleName = updatedPatient.middleName,
+                                pphoneNo = updatedPatient.phoneNo,
+                                pprofilePicLink = updatedPatient.profilePicLink,
+                                pemail = updatedPatient.email)
+                databaseReference.child(appointment.scheduleId).setValue(appointmentcopy)
+                    .addOnSuccessListener {
+                    }
+                    .addOnFailureListener {
+                        _dataState.value = DataStates.Error
+                    }
+            }
+        _dataState.value = DataStates.modifypatientappointments
+    }
+    fun updateAppointmentsDoctor(appointments:List<Appointment>, doctor: Doctor) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        appointments.forEach { appointment ->
+            val appointmentcopy = appointment.copy(
+                doctorId = doctor.doctorId,
+                dfirstName = doctor.firstName,
+                dlastName = doctor.lastName,
+                dmiddleName = doctor.middleName,
+                dphoneNo = doctor.phoneNo,
+                dprofilePicLink = doctor.profilePicLink,
+                demail = doctor.email,
+                price = doctor.rate.toString()
+                )
+            databaseReference.child(appointment.scheduleId).setValue(appointmentcopy)
+                .addOnSuccessListener {
+                }
+                .addOnFailureListener {
+                    _dataState.value = DataStates.Error
+                }
+        }
+
+        _dataState.value = DataStates.modifydoctorappointments
+    }
     fun createAndUploadAppointment(doctor: Doctor, patient: Patient, date:String,time:String, unix:Long ) {
         _dataState.value = DataStates.Loading
         val appointment = Appointment(
@@ -154,6 +196,31 @@ class DataViewModel : ViewModel() {
                     }
                 }
                 _dataState.value=DataStates.getSchedulesSuccess(appointments)
+                // Here you have a list of appointments for the specified doctor
+                // You can pass this list to the UI or handle it as needed
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                _dataState.value=DataStates.Error
+            }
+        })
+    }
+    fun getAppointmentsForDoctorWithPatientList(doctorId: String) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("appointments")
+        val query = databaseReference.orderByChild("doctorId").equalTo(doctorId)
+
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val patients = mutableSetOf<String>()
+                val appointments = mutableListOf<Appointment>()
+                for (snapshot in dataSnapshot.children) {
+                    val appointment = snapshot.getValue(Appointment::class.java)
+                    appointment?.let {
+                        patients.add(it.patientId)
+                        appointments.add(it)
+                    }
+                }
+                _dataState.value=DataStates.getSchedulesWithPatientsSuccess(appointments,patients.toList())
                 // Here you have a list of appointments for the specified doctor
                 // You can pass this list to the UI or handle it as needed
             }

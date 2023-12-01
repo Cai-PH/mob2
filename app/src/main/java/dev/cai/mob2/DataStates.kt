@@ -1,7 +1,5 @@
 package dev.cai.mob2
 
-import android.provider.ContactsContract.Data
-
 sealed class DataStates {
     data class authUserSuccess(val uid: String):DataStates()
 
@@ -18,9 +16,15 @@ sealed class DataStates {
     data class createScheduleSuccess(val appointment: Appointment):DataStates()
     data class uploadProfileImageSuccess(val link:String):DataStates()
     data class getSchedulesSuccess(val appointments: List<Appointment>):DataStates()
+    data class getSchedulesWithPatientsSuccess(
+        val appointments: List<Appointment>,
+        val patients: List<String>
+    ):DataStates()
     data object addScheduleSuccess:DataStates()
     data object deleteScheduleSuccess:DataStates()
     data object createUserSuccess:DataStates()
+    data object modifypatientappointments:DataStates()
+    data object modifydoctorappointments:DataStates()
 
     data object userNotExist:DataStates()
     data object Loading:DataStates()

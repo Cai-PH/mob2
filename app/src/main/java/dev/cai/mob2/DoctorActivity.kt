@@ -5,77 +5,162 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
+import dev.cai.mob2.databinding.ActivityDoctorHomeBinding
+import dev.cai.mob2.databinding.ActivityPatientsBinding
 import dev.cai.mob2.databinding.AppointmentCardBinding
+import dev.cai.mob2.databinding.DoctorprofileBinding
 
 class DoctorActivity : AppCompatActivity(){
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private lateinit var recyclerView: RecyclerView
     private lateinit var mAdapter: MyAdapter
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var dataViewModel: DataViewModel
+    private lateinit var dataViewModel3: DataViewModel
     private lateinit var scheduleButton: Button
-
+    private lateinit var binding: ActivityDoctorHomeBinding
+    private lateinit var binding2:ActivityPatientsBinding
+    private var patientlist= mutableListOf<String>()
+    private var doctor= Doctor()
+    private lateinit var doctorprofileBinding:DoctorprofileBinding
     private var count:Int=0
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_patient_home)
-        scheduleButton= findViewById(R.id.btn_findDoc)
-        dataViewModel= DataViewModel()
-        drawerLayout = findViewById(R.id.drawerLayout)
-        recyclerView = findViewById(R.id.rv_patients)
-        // Set the listener for navigation item clicks
+    private lateinit var uid:String
 
-        // Create and set the ActionBarDrawerToggle
-        actionBarDrawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawerLayout.addDrawerListener(actionBarDrawerToggle)
-        actionBarDrawerToggle.syncState()
+    fun doctorProfileInit() {
 
-        // Set the action bar's Home button to act as the navigation drawer toggle
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        doctorprofileBinding.tvDoctorFirstName.text=doctor.lastName + ", " + doctor.firstName + " " + doctor.middleName + "."
+        doctorprofileBinding.tvDoctorEmail.text=doctor.email
+        doctorprofileBinding.tvDoctorPhoneNo.text=doctor.phoneNo
+        doctorprofileBinding.tvDoctorRate.text= doctor.rate.toString()
+        doctorprofileBinding.tvDoctorType.text=doctor.type
+        doctorprofileBinding.tvDoctorAbout.text=doctor.about
 
-        scheduleButton.setOnClickListener {
-            val uid= intent.getStringExtra("UID")
-            Log.d("aasdb", uid?:"")
-            val intent = Intent(this@DoctorActivity, DoctorListActivity::class.java)
-            intent.putExtra("UID",uid)
+        doctorprofileBinding.btnLogout.setOnClickListener {
+            val intent = Intent(this@DoctorActivity, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
+        }
+        Picasso.get()
+            .load(doctor.profilePicLink)
+            .into(doctorprofileBinding.imgPfp)
+        doctorprofileBinding.btnEdit.setOnClickListener {
+            val intent = Intent(this@DoctorActivity, DoctorEditDataActivity::class.java)
+            intent.putExtra("doctordata",doctor)
             startActivity(intent)
         }
-        // Set up the RecyclerView
+        doctorprofileBinding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    binding.bottomNavigation.selectedItemId=R.id.nav_appts
+                    setContentView(binding.root)
+                    true
+                }
+                R.id.nav_patients -> {
+                    binding2.bottomNavigation.selectedItemId=R.id.nav_patients
+                    setContentView(binding2.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    setContentView(doctorprofileBinding.root)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        uid = intent.getStringExtra("UID").toString()
+        binding= ActivityDoctorHomeBinding.inflate(layoutInflater)
+        binding2=ActivityPatientsBinding.inflate(layoutInflater)
+        doctorprofileBinding=DoctorprofileBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        dataViewModel= DataViewModel()
+        dataViewModel3= DataViewModel()
+        recyclerView = binding.rvDoctors
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         dataViewModel.dataState.observe(this, Observer { dataState ->
             when (dataState) {
-                is DataStates.getSchedulesSuccess -> {
+                is DataStates.getSchedulesWithPatientsSuccess -> {
+                    patientlist.clear()
+                    patientlist.addAll(dataState.patients)
                     count=dataState.appointments.size
-                    mAdapter = MyAdapter(dataState.appointments,count,this)
+                    val appointments=dataState.appointments.sortedWith(compareBy({it.patientId},{it.unix}))
+                    val appointmentsByTime = dataState.appointments.sortedWith(compareBy { it.unix })
+                    mAdapter = MyAdapter(appointmentsByTime,count,this)
+                    binding2.rvPatients.adapter=MyAdapter(appointments,count,this)
+                    binding2.rvPatients.layoutManager=LinearLayoutManager(this)
                     recyclerView.adapter = mAdapter
                 }
                 DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
                 else -> {}
             }
         })
-        dataViewModel.getAppointmentsForDoctor(intent.getStringExtra("UID").toString())
-        mAdapter = MyAdapter(emptyList(),count, this)
-        recyclerView.adapter = mAdapter
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle ActionBarDrawerToggle clicks
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true
+        dataViewModel.getAppointmentsForDoctorWithPatientList(uid)
+        dataViewModel3.getDoctor(uid)
+        dataViewModel3.dataState.observe(this, Observer { dataState ->
+            when (dataState) {
+                is DataStates.getDoctorDataSuccess -> {
+                    doctor=dataState.doctor
+                    doctorProfileInit()
+                }
+                DataStates.Error -> Toast.makeText(this, "ERROR OCCURED", Toast.LENGTH_SHORT).show()
+                else -> {}
+            }
+        })
+        binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    setContentView(binding.root)
+                    true
+                }
+                R.id.nav_patients -> {
+                    binding2.bottomNavigation.selectedItemId=R.id.nav_patients
+                    setContentView(binding2.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    doctorprofileBinding.bottomNavigation.selectedItemId=R.id.nav_profile
+                    setContentView(doctorprofileBinding.root)
+                    true
+                }
+                else -> false
+            }
         }
-        return super.onOptionsItemSelected(item)
+
+        binding2.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_appts -> {
+                    binding.bottomNavigation.selectedItemId=R.id.nav_appts
+                    setContentView(binding.root)
+                    true
+                }
+                R.id.nav_patients -> {
+                    setContentView(binding2.root)
+                    true
+                }
+                R.id.nav_profile -> {
+                    doctorprofileBinding.bottomNavigation.selectedItemId=R.id.nav_profile
+                    setContentView(doctorprofileBinding.root)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private inner class MyAdapter(
@@ -89,6 +174,9 @@ class DoctorActivity : AppCompatActivity(){
                 apt.let {
 
                 }
+                Picasso.get()
+                    .load(apt.pprofilePicLink)
+                    .into(appointmentCardBinding.imageButton1)
                 appointmentCardBinding.tvFee.text=apt.price+" PHP"
                 appointmentCardBinding.tvName.text= apt.plastName+ ", " + apt.pfirstName+ " " + apt.pmiddleName + "."
                 appointmentCardBinding.layout12.removeView(appointmentCardBinding.tvLocation)
